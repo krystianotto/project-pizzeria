@@ -85,6 +85,7 @@
       thisProduct.formInputs = thisProduct.form.querySelectorAll(select.all.formInputs);
       thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
       thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
+      thisProduct.imageWrapper = thisProduct.element.querySelector(select.menuProduct.imageWrapper);
 
       console.log('thisProduct.form',thisProduct.form);
       console.log('thisProduct.formInputs',thisProduct.formInputs);
@@ -153,11 +154,12 @@
       for(let paramId in thisProduct.data.params){
         /* save the element in thisProduct.data.params with key paramId as const param */
         const param = thisProduct.data.params[paramId];
+        console.log('param',param);
         /* START LOOP: for each optionId in param.options */
         for(let optionId in param.options){
           /* save the element in param.options with key optionId as const option */
           const option = param.options[optionId];
-          console.log(option);
+          console.log('option',option);
 
           const optionSelected = formData.hasOwnProperty(paramId) && formData[paramId].indexOf(optionId) > -1;
 
@@ -169,6 +171,14 @@
           /* deduct price of option from price */
           !optionSelected && option.default ? price -= option.price : null;
           /* END ELSE IF: if option is not selected and option is default */
+          console.log('option selected',optionSelected);
+
+          const images = thisProduct.imageWrapper.querySelectorAll('.'+ paramId + '-' + optionId);
+          console.log(images);
+
+          for(let image of images){
+            optionSelected ? image.classList.add(classNames.menuProduct.imageVisible) : image.classList.remove(classNames.menuProduct.imageVisible);
+          }
 
         /* END LOOP: for each optionId in param.options */
         }
