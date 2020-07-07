@@ -63,6 +63,7 @@
       thisProduct.getElements();
       thisProduct.initAccordion();
       thisProduct.initOdrderForm();
+      thisProduct.initAmountWidget();
       thisProduct.processOrder();
 
       console.log('This product = ', thisProduct);
@@ -86,11 +87,12 @@
       thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
       thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
       thisProduct.imageWrapper = thisProduct.element.querySelector(select.menuProduct.imageWrapper);
+      thisProduct.amountWidgetElem = thisProduct.element.querySelector(select.menuProduct.amountWidget);
 
-      console.log('thisProduct.form',thisProduct.form);
-      console.log('thisProduct.formInputs',thisProduct.formInputs);
-      console.log('thisProduct.cartButton',thisProduct.cartButton);
-      console.log('thisProduct.priceElem', thisProduct.priceElem);
+      //console.log('thisProduct.form',thisProduct.form);
+      //console.log('thisProduct.formInputs',thisProduct.formInputs);
+      //console.log('thisProduct.cartButton',thisProduct.cartButton);
+      //console.log('thisProduct.priceElem', thisProduct.priceElem);
     }
 
     initAccordion(){
@@ -106,7 +108,7 @@
         thisProduct.element.classList.toggle('active');
         /* find all active products */
         const activeProducts = document.querySelectorAll(select.all.menuProductsActive);
-        console.log(activeProducts);
+        //console.log(activeProducts);
         /* START LOOP: for each active product */
         for(let activeProduct of activeProducts){
           /* START: if the active product isn't the element of thisProduct */
@@ -146,7 +148,7 @@
       const thisProduct = this;
 
       const formData = utils.serializeFormToObject(thisProduct.form);
-      console.log('formData',thisProduct.id , formData);
+      //console.log('formData',thisProduct.id , formData);
 
       let price = thisProduct.data.price;
 
@@ -154,12 +156,12 @@
       for(let paramId in thisProduct.data.params){
         /* save the element in thisProduct.data.params with key paramId as const param */
         const param = thisProduct.data.params[paramId];
-        console.log('param',param);
+        //console.log('param',param);
         /* START LOOP: for each optionId in param.options */
         for(let optionId in param.options){
           /* save the element in param.options with key optionId as const option */
           const option = param.options[optionId];
-          console.log('option',option);
+          //console.log('option',option);
 
           const optionSelected = formData.hasOwnProperty(paramId) && formData[paramId].indexOf(optionId) > -1;
 
@@ -171,10 +173,10 @@
           /* deduct price of option from price */
           !optionSelected && option.default ? price -= option.price : null;
           /* END ELSE IF: if option is not selected and option is default */
-          console.log('option selected',optionSelected);
+          //console.log('option selected',optionSelected);
 
           const images = thisProduct.imageWrapper.querySelectorAll('.'+ paramId + '-' + optionId);
-          console.log(images);
+          //console.log(images);
 
           for(let image of images){
             optionSelected ? image.classList.add(classNames.menuProduct.imageVisible) : image.classList.remove(classNames.menuProduct.imageVisible);
@@ -186,9 +188,86 @@
       /* END LOOP: for each paramId in thisProduct.data.params */
       }
 
-
+      price *= thisProduct.amountWidget.value;
 
       thisProduct.priceElem.innerHTML = price;
+    }
+
+    initAmountWidget(){
+      const thisProduct = this;
+
+      thisProduct.amountWidget = new AmountWidget(thisProduct.amountWidgetElem);
+
+      thisProduct.amountWidgetElem.addEventListener('updated',function(){
+        thisProduct.processOrder();
+      });
+
+    }
+
+  }
+
+  class AmountWidget{
+    constructor(element) {
+      const thisWidget = this;
+
+      thisWidget.getElements(element);
+
+      thisWidget.value = settings.amountWidget.defaultValue;
+
+      thisWidget.setValue(thisWidget.input.value);
+      thisWidget.initActions();
+
+      console.log('AmountWidget', thisWidget);
+      console.log('constructor arguments', element);
+    }
+
+    getElements(element){
+      const thisWidget = this;
+
+      thisWidget.element = element;
+      thisWidget.input = thisWidget.element.querySelector(select.widgets.amount.input);
+      thisWidget.linkDecrease = thisWidget.element.querySelector(select.widgets.amount.linkDecrease);
+      thisWidget.linkIncrease = thisWidget.element.querySelector(select.widgets.amount.linkIncrease);
+    }
+
+    setValue(value){
+      const thisWidget = this;
+
+      const newValue = parseInt(value);
+
+      if(newValue != thisWidget.value && newValue>=settings.amountWidget.defaultMin && newValue<=settings.amountWidget.defaultMax){
+        thisWidget.value = newValue;
+        thisWidget.announce();
+      }
+
+      thisWidget.input.value = thisWidget.value;
+
+    }
+
+    initActions(){
+      const thisWidget = this;
+
+      thisWidget.input.addEventListener('change',function(){
+        thisWidget.setValue(thisWidget.input.value);
+      });
+
+      thisWidget.linkDecrease.addEventListener('click',function (event) {
+        event.preventDefault();
+        thisWidget.setValue(thisWidget.value-1);
+      });
+
+      thisWidget.linkIncrease.addEventListener('click', function(event){
+        event.preventDefault();
+        thisWidget.setValue(thisWidget.value+1);
+      });
+
+    }
+
+    announce(){
+      const thisWidget = this;
+
+      const event = new Event('updated');
+      thisWidget.element.dispatchEvent(event);
     }
 
   }
