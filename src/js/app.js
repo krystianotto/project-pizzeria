@@ -79,8 +79,6 @@ const app = {
 
       });
 
-    console.log('thisAppData', JSON.stringify(thisApp.data));
-
   },
 
   initCart: function () {
