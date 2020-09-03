@@ -71,6 +71,10 @@ export const select = {
   nav: {
     links: '.main-nav a',
   },
+  carousel: {
+    slide: '.slide',
+    dot: '.dot',
+  }
 };
 
 export const classNames = {
